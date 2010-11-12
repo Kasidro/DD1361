@@ -1,98 +1,54 @@
 
 module DkToSv where
 
-import Char
+import Text.Regex
 
-class DanishNumWord w where
-    value :: w -> Int
+split s = splitRegex space s
+    where space = mkRegex "[ \n]+"
 
-data En2Ni = En |
-             Et | 
-             To |
-             Tre |
-             Fire |
-             Fem |
-             Seks |
-             Syv |
-             Otte |
-             Ni deriving Show
+dk2sv :: String -> Int
+dk2sv aString = en2ni (split aString)
 
-instance DanishNumWord En2Ni where
-    value En = 1
-    value Et = 1
-    value To = 2
-    value Tre = 3
-    value Fire = 4
-    value Fem = 5
-    value Seks = 6
-    value Syv = 7
-    value Otte = 8
-    value Ni = 9
+en2ni (w:rest) | w == "en"   = 1 + mer rest
+               | w == "to"   = 2 + mer rest
+               | w == "tre"  = 3 + mer rest
+               | w == "fire" = 4 + mer rest
+               | w == "fem"  = 5 + mer rest
+               | w == "seks" = 6 + mer rest
+               | w == "syv"  = 7 + mer rest
+               | w == "otte" = 8 + mer rest
+               | w == "ni"   = 9 + mer rest
+               | otherwise   = ti2nitten (w:rest)
 
-data Ti2Nitten = Ti |
-                 Ellve |
-                 Tolv |
-                 Tretten |
-                 Fjorten |
-                 Femten |
-                 Seksten |
-                 Sytten |
-                 Otten |
-                 Nitten deriving Show
+ti2nitten :: [String] -> Int
+ti2nitten (w:rest) | w == "ti" = 10
+                   | w == "ellve" = 11
+                   | w == "tolv" = 12
+                   | w == "tretten" = 13
+                   | w == "fjorten" = 14
+                   | w == "femten" = 15
+                   | w == "seksten" = 16
+                   | w == "sytten" = 17
+                   | w == "arten" = 18
+                   | w == "nitten" = 19
+                   | otherwise = tyve2halvfems (w:rest)
 
-instance DanishNumWord Ti2Nitten where
-    value Ti = 10
-    value Ellve = 11
-    value Tolv = 12
-    value Tretten = 13
-    value Fjorten = 14
-    value Femten = 15
-    value Seksten = 16
-    value Sytten = 17
-    value Otten = 18
-    value Nitten = 19
+tyve2halvfems :: [String] -> Int
+tyve2halvfems (w:rest) | w == "tyve" = 20
+                       | w == "tredive" = 30
+                       | w == "fyrre" = 40
+                       | w == "fyrretyve" = 40
+                       | otherwise = halvtreds2halvfems (w:rest)
 
-data Tyve2Fyrre = Tyve |
-                  Tredvie |
-                  Fyrre
+halvtreds2halvfems (w:rest) | w == "halv" = -10 + mult rest
+                            | otherwise   = mult (w:rest)
 
-instance DanishNumWord Tyve2Fyrre where
-    value Tyve = 20
-    value Tredvie = 30
-    value Fyrre = 40
+mult (w:rest) | w == "tres"   = 60
+              | w == "firs"   = 80
+              | w == "fjerds" = 80
+              | w == "fems"   = 100
 
--- data DanishNumWords = Tres |
---                      Fjerds |
---                      Firs |
---                      Fems |
---                      Halv |
---                      End deriving Show
-
-main = do str <- readFile "dk.txt"
-          print (compile (lexer str))
-          print "hej"
-
--- Givet input:
---   en og tyve
---   to og tyve
--- 
--- Ska lexer returnera:
---   [En, Tyve, End, To, Tyve]
-lexer :: String -> [DanishNumWord]
-lexer aString = []
-
--- Givet input:
---   [En, Tyve, End, To, Tyve]
---
--- Ska compile returnera:
---   [21, 22]
-compile :: [DanishNumWord] -> [Int]
-compile (En2Ni : Halv : mult : t) = value(en2ni) + (value mult) - 10
-compile (En2Ni:t)                 = value h : compile t
-compile []                        = []
-
---value :: DanishNumWords -> Int
---value Tres = 60
---value Fjerds = 80
---value Firs = 80
---value Fems = 100
+mer :: [String] -> Int
+mer [] = 0
+mer (w:rest) | w == "og" = tyve2halvfems rest
+             | otherwise    = 0
