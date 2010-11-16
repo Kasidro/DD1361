@@ -51,8 +51,18 @@ int main(int argc, char * argv[]) {
             writeList(lista);
             break;
         case 6:
-            /* Ta bort person implementeras fritt.
-               Lägg till lämplid metod i nod */
+            printf("Vem vill du radera? ");
+            scanf("%s", tmp.name);
+
+            tmp_pek = find((*compare_names), tmp, lista);
+
+            if(tmp_pek != NULL) {
+                lista = removePost(tmp_pek);
+                printf("lista is now %s", lista->name);
+            }
+            else
+                printf("Hittade inte namnet '%s'\n", tmp.name);
+
             break;
         }
         
@@ -61,5 +71,3 @@ int main(int argc, char * argv[]) {
     printf("\n\nHej då!\n");
     return 0;
 }
-
-

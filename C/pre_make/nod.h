@@ -7,7 +7,8 @@
 struct post {
     char name[NAME_LENGTH];
     float bmi;
-    struct post * next;
+    struct post* next;
+    struct post* previous;
 };
 
 typedef struct post Post;
@@ -24,6 +25,8 @@ int compare_names(Post * a, Post * b);
 int compare_bmi(Post * a, Post * b);
 
 void insert(Post ** list);
+
+Post* removePost(Post* p);
 
 void load_names(char * filename, Post ** list);
 

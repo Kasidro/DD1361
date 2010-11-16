@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "nod.h"
 
 void writePost(Post * p) {
@@ -14,7 +15,7 @@ void writeList(Post * p) {
     }
 }
 
-Post* find(int (*compare) (Post*  a, Post* b), Post seeked, Post * list) {
+Post* find(int (*compare) (Post*  a, Post* b), Post seeked, Post* list) {
     while(list) {
         if((*compare)(&seeked, list) == 0)
             return list;
@@ -26,8 +27,8 @@ Post* find(int (*compare) (Post*  a, Post* b), Post seeked, Post * list) {
 }
 
 int compare_names(Post * a, Post * b) {
-    char* namea = a->&name,
-          nameb = b->&name;
+    char *namea = a->name,
+         *nameb = b->name;
 
     while(*namea && *nameb) {
         if(*namea != *nameb)
@@ -53,13 +54,13 @@ void insert(Post ** list) {
     int weight;
     float height;
 
-    printf("Vad heter personen?");
-    scanf("%s", &name);
+    printf("Vad heter personen? ");
+    scanf("%s", (char*) &name);
 
-    printf("Hur lång är personen (m)?");
+    printf("Hur lång är personen (m)? ");
     scanf("%f", &height);
 
-    printf("Hur mycket v�ger personen (KG)");
+    printf("Hur mycket v�ger personen (KG) ");
     scanf("%d", &weight);
 
     p = (Post*)malloc(sizeof(Post));
@@ -67,7 +68,32 @@ void insert(Post ** list) {
     p->bmi = weight / height / height;
 
     p->next = *list;
+    (**list).previous = p;
     *list = p;
+}
+
+Post* removePost(Post* p) {
+    if(!p->previous)
+        return p->next;
+
+    // We are guaranteed to have a previous element here
+    if(!p->next) {
+        p->previous->next = NULL;
+
+        while(p->previous)
+            p = p->previous;
+
+        return p;
+    }
+
+    // We have both a previous and a next element
+    p->previous->next = p->next;
+    p->next->previous = p->previous;
+
+    while(p->previous)
+        p = p->previous;
+
+    return p;
 }
 
 void load_names(char * filename, Post ** list) {
@@ -75,6 +101,8 @@ void load_names(char * filename, Post ** list) {
     float bmi;
     FILE *fil = fopen(filename, "r");
     Post * p;
+
+    int first = 1;
 
     if (fil == NULL) {
 	    printf("Filen inte funnen.\n");
@@ -85,8 +113,13 @@ void load_names(char * filename, Post ** list) {
             p->bmi = bmi;
             
             p->next = *list;
+
+            if(!first) {
+                (**list).previous = p;
+                first = 0;
+            }
+
             *list = p;
         }
     }
 }
-
