@@ -5,7 +5,7 @@
 #include "nod.h"
 
 void writePost(Post * p) {
-    printf("Namn: %s\nbmi:%.2f\n\n", p->name, p->bmi);
+    printf("Namn: %s\nbmi:%.2f\nCurrent:%p\nNext:%p\nPrevious:%p\n\n", p->name, p->bmi, p, p->next, p->previous);
 }
 
 void writeList(Post * p) {
@@ -73,11 +73,16 @@ void insert(Post ** list) {
 }
 
 Post* removePost(Post* p) {
-    if(!p->previous)
+    if(!p->previous) {
+        printf("In first block");
+        p->next->previous = NULL;
         return p->next;
+    }
 
     // We are guaranteed to have a previous element here
     if(!p->next) {
+        printf("In second block");
+
         p->previous->next = NULL;
 
         while(p->previous)
@@ -89,6 +94,8 @@ Post* removePost(Post* p) {
     // We have both a previous and a next element
     p->previous->next = p->next;
     p->next->previous = p->previous;
+
+    printf("p->previous->next is now %s", p->next->name);
 
     while(p->previous)
         p = p->previous;
@@ -102,7 +109,7 @@ void load_names(char * filename, Post ** list) {
     FILE *fil = fopen(filename, "r");
     Post * p;
 
-    int first = 1;
+    int first = 1; // true
 
     if (fil == NULL) {
 	    printf("Filen inte funnen.\n");
@@ -116,8 +123,9 @@ void load_names(char * filename, Post ** list) {
 
             if(!first) {
                 (**list).previous = p;
-                first = 0;
             }
+            else
+                first = 0;
 
             *list = p;
         }
